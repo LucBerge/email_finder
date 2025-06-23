@@ -15,9 +15,12 @@ def find():
     if not domain:
         return jsonify({'error': 'domain is required'}), 400
     
+    print(f"Finding emails for {name} at {domain}...")
+
     valid = invalid = []
     emails = combinaison.generate_email_combinations(name, domain)
     for email in emails:
+        print(f"Checking email: {email} ({emails.index(email) + 1}/{len(emails)})")
         is_valid = mailmeteor.verify_email(email)
         if is_valid:
             valid.append(email)
@@ -36,8 +39,10 @@ def check():
     if not email:
         return jsonify({'error': 'email is required'}), 400
 
+    print(f"Checking email: {email}")
+
     is_valid = mailmeteor.verify_email(email)
     return jsonify({'valid': is_valid})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
