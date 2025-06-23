@@ -10,7 +10,7 @@ on:
 
 env:
   TAG: latest
-  IMAGE_NAME: ghcr.io/LucBerge/email_finder
+  IMAGE_NAME: ghcr.io/lucberge/email_finder
 
 permissions:
   contents: write
