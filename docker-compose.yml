@@ -1,0 +1,7 @@
+services:
+  email_finder:
+    image: email_finder:latest
+    container_name: email_finder
+    restart: unless-stopped
+    ports:
+      - 5000:5000
