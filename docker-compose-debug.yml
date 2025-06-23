@@ -1,7 +1,10 @@
 services:
   email_finder:
-    image: ghcr.io/lucberge/email_finder:latest
+    image: email_finder:latest
     container_name: email_finder
     restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 5000:5000
