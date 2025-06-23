@@ -3,9 +3,12 @@ import combinaison
 from mailmeteor import MailMeteor
 from threading import Thread
 import requests
+import os
 
 app = Flask(__name__)
-mailmeteor = MailMeteor()
+
+HOST = os.getenv('HOST', 'localhost')
+PORT = os.getenv('PORT', None)
 
 @app.route('/find', methods=['POST'])
 def find():
@@ -23,6 +26,7 @@ def find():
     def process_find(name, domain, callback):
         print(f"Finding emails for {name} at {domain}...")
 
+        mailmeteor = MailMeteor()
         valid = []
         invalid = []
         emails = combinaison.generate_email_combinations(name, domain)
@@ -38,6 +42,7 @@ def find():
             'valid': valid,
             'invalid': invalid
         }
+        mailmeteor.close()
 
         print(f"Finished finding emails for {name} at {domain}. Valid: {len(valid)}, Invalid: {len(invalid)}")
         print(f"Sending results to callback URL: {callback}")
@@ -55,9 +60,11 @@ def check():
 
     print(f"Checking email: {email}")
 
+    mailmeteor = MailMeteor()
     is_valid = mailmeteor.verify_email(email)
+    mailmeteor.close()
     print(f"Email {email} is {'valid' if is_valid else 'invalid'}")
     return jsonify({'valid': is_valid})
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000)
+    app.run(debug=False, host=HOST, port=PORT)
