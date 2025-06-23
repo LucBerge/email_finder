@@ -23,7 +23,8 @@ def find():
     def process_find(name, domain, callback):
         print(f"Finding emails for {name} at {domain}...")
 
-        valid = invalid = []
+        valid = []
+        invalid = []
         emails = combinaison.generate_email_combinations(name, domain)
         for idx, email in enumerate(emails):
             print(f"Checking email: {email} ({idx + 1}/{len(emails)})")
