@@ -1,7 +1,23 @@
 FROM python:slim
+
 WORKDIR /app
-COPY requirements.txt .
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    unzip \
+    xvfb \
+    libxi6 \
+    libgconf-2-4 \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY src/ src/
+
 EXPOSE 5000
 ENTRYPOINT ["python", "src/server.py"]
