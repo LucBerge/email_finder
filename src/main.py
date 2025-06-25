@@ -42,6 +42,19 @@ def main():
             with open(filepath, 'r+') as f:
                 content = f.read()
 
+                # If the file is empty
+                if not content:
+                    # Check if a random email is valid
+                    random_email_is_valid = mailmeteor.verify_email(f"this_is_a_random_email@{domain}")
+                    if random_email_is_valid:
+                        print(f"Random email failed for {domain}. Existing...")
+                        f.write(f"*@{domain} is not compatible with MailMeteor. Find an other way...\n")
+                        continue
+                
+                # Skip if the file already contains *@domain
+                if f"*@{domain}" in content:
+                    continue
+
                 # For each email to check
                 for email in emails:
 
