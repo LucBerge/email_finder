@@ -1,4 +1,5 @@
 import itertools 
+import re
 
 NAME = "My Name"
 DOMAIN = "example.com"
@@ -9,7 +10,12 @@ DELIMITERS_TO_SKIP = [''.join(d) for d in TWO_DELIMITERS ]
 
 def generate_name_combinations(name):
     # Split the name into parts
-    parts = name.lower().split()
+    parts = re.sub(r'\s+', ' ', name.strip().lower()) \
+            .replace('.', ' ') \
+            .replace('_', ' ') \
+            .replace('-', ' ') \
+            .replace(',', ' ') \
+            .split()
 
     # Generate variations for each part of the name
     part_variations = []

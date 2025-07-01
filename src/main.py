@@ -1,6 +1,7 @@
 import os
-import combinaison
-from mailmeteor import MailMeteor
+from email_finder import EmailFinder
+
+EMAIL_VERIFIER = "mailmeteor"
 
 def list_files():
     files = []
@@ -24,73 +25,49 @@ def list_files():
 def main():
     # Get all files
     files = list_files()
-    mailmeteor = MailMeteor()
 
-    try:
-        # For each file
-        for file in files:
-            # Get the name and domain of the file
-            name = file["name"]
-            domain = file["domain"]
-            filepath = file["filepath"]
+    # For each file
+    for file in files:
+        # Get the name and domain of the file
+        name = file["name"]
+        domain = file["domain"]
+        filepath = file["filepath"]
 
-            # Get all combinations of the name and domain
-            emails = combinaison.generate_email_combinations(name, domain)
-            action_performed = False
+        # Read the file
+        with open(filepath, 'r+') as f:
+            content = f.read()
 
-            # Read the file
-            with open(filepath, 'r+') as f:
-                content = f.read()
-
-                # If the file is empty
-                if not content:
-                    # Check if a random email is valid
-                    random_email_is_valid = mailmeteor.verify_email(f"this_is_a_random_email@{domain}")
-                    if random_email_is_valid:
-                        print(f"Random email failed for {domain}. Existing...")
-                        f.write(f"*@{domain} is not compatible with MailMeteor. Find an other way...\n")
-                        continue
+            # If the file is empty
+            if not content:
+                # Find valid email
+                emails = EmailFinder(EMAIL_VERIFIER).find_email(name, domain)
                 
-                # Skip if the file already contains *@domain
-                if f"*@{domain}" in content:
+                print(f"----------------\nReport for {name} (@{domain}):")
+                f.write('---------- VALID EMAILS ----------\n')
+                # If emails is empty, domain is not compatible with verifier
+                if len(emails) == 0:
+                    print(f"Domain {domain} is not compatible with {EMAIL_VERIFIER}. Find an other way...")
+                    f.write(f"*@{domain} is not compatible with {EMAIL_VERIFIER}. Find an other way...\n")
                     continue
 
-                # For each email to check
-                for email in emails:
+                # Get valid emails
+                valid_emails = [email for email, is_valid in emails.items() if is_valid]
+                if len(valid_emails) == 0:
+                    print(f"No valid emails found for {name} (@{domain}). Is it a gost?")
+                    f.write(f"None\n")
+                else:
+                    print(f"Valid emails: {len(valid_emails)}")
+                    for email in valid_emails:
+                        print(f"- {email}")
+                        f.write(f"{email}\n")
 
-                    #If the email is not in the file
-                    if email not in content:
+                print(f"Full report saved in: {filepath}\n----------------")
+                f.write('\n---------- INVALID EMAILS ----------\n')
 
-                        action_performed = True
-                        # Print the remaining number of emails to check
-                        print(f"Checking email: {email} ({emails.index(email) + 1}/{len(emails)})")
-
-                        # Write the email in the file
-                        is_valid = mailmeteor.verify_email(email)
-                        f.write(f"{is_valid}\t{email}\n")
-
-                        if is_valid:
-                            print(f"{email} is valid!")
-
-            # Read the file again
-            with open(filepath, 'r') as f:
-                if action_performed:
-                    # Read content again
-                    content = f.read()
-                    # Print report
-                    print(f"----------------\nReport for {name} (@{domain}):")
-                    valid_emails = [line for line in content.split('\n') if line and line.split('\t')[0] == 'True']
-                    if len(valid_emails) > 0:
-                        print(f"Valid emails: {len(valid_emails)}")
-                        for email in valid_emails:
-                            print(f"- {email.split('\t')[1]}")
-                    else:
-                        print("No valid emails found. Is it a gost?")
-
-                    print(f"Full report saved in: {filepath}\n----------------")
-
-    finally:
-        mailmeteor.close()
+                # Get invalid emails
+                invalid_emails = [email for email, is_valid in emails.items() if not is_valid]
+                for email in invalid_emails:
+                    f.write(f"{email}\n")
 
     # Ask for person full name
     name = input("Enter your target fullname with spaces between names (case insensitive) (eg. Arthur MENSCH): ")
@@ -111,5 +88,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt:   
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by user.")
         pass

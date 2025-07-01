@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
-import combinaison
-from mailmeteor import MailMeteor
+from email_verifier.email_verifier_factory import EmailVerifierFactory
+from email_finder import EmailFinder
 from threading import Thread
 import requests
 import os
@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 HOST = os.getenv('HOST', 'localhost')
 PORT = os.getenv('PORT', None)
+EMAIL_VERIFIER = os.getenv('EMAIL_VERIFIER', 'mailmeteor')
 
 @app.route('/find', methods=['POST'])
 def find():
@@ -25,28 +26,10 @@ def find():
 
     def process_find(name, domain, callback):
         print(f"Finding emails for {name} at {domain}...")
-
-        mailmeteor = MailMeteor()
-        valid = []
-        invalid = []
-        emails = combinaison.generate_email_combinations(name, domain)
-        for idx, email in enumerate(emails):
-            print(f"Checking email: {email} ({idx + 1}/{len(emails)})")
-            is_valid = mailmeteor.verify_email(email)
-            if is_valid:
-                valid.append(email)
-            else:
-                invalid.append(email)
-        
-        result = {
-            'valid': valid,
-            'invalid': invalid
-        }
-        mailmeteor.close()
-
-        print(f"Finished finding emails for {name} at {domain}. Valid: {len(valid)}, Invalid: {len(invalid)}")
+        emails = EmailFinder(EMAIL_VERIFIER).find_email(name, domain)
+        print(f"Finished finding emails for {name} at {domain}")
         print(f"Sending results to callback URL: {callback}")
-        requests.post(callback, json=result)
+        requests.post(callback, json=emails)
 
     Thread(target=process_find, args=(name, domain, callback)).start()
     return '', 200
@@ -60,9 +43,9 @@ def check():
 
     print(f"Checking email: {email}")
 
-    mailmeteor = MailMeteor()
-    is_valid = mailmeteor.verify_email(email)
-    mailmeteor.close()
+    verifier = EmailVerifierFactory.create(EMAIL_VERIFIER)
+    is_valid = verifier.verify_email(email)
+    verifier.close()
     print(f"Email {email} is {'valid' if is_valid else 'invalid'}")
     return jsonify({'valid': is_valid})
 
