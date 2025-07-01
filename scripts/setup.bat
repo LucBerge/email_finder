@@ -1,6 +1,7 @@
 @echo off
 
 cd ..
+mkdir data
 echo Installing virtual environment...
 python -m venv .venv
 call .venv\Scripts\activate
