@@ -25,15 +25,27 @@ class Smtp(AbstractEmailVerifier):
         mx_servers = Smtp.get_mx(domain)
         
         for mx_server in mx_servers:
-            smtpServer = smtplib.SMTP(mx_server, 25, timeout=10)
-            smtpServer.ehlo_or_helo_if_needed()
-            smtpServer.mail('')
-            r = smtpServer.rcpt(email)
-            if r[0] == 250:
+            try:
+                smtpServer = smtplib.SMTP(mx_server, 25, timeout=10)
+                smtpServer.ehlo_or_helo_if_needed()
+                smtpServer.mail('')
+                r = smtpServer.rcpt(email)
                 smtpServer.quit()
-                return True
+                if r[0] == 250:
+                    return True
+                
+                # GOOGLE RATE ERROR
+                if r[0] == 550 and 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
+                    return True
 
-        smtpServer.quit()
+                # SPAMHAUS PROJECT
+                if r[0] == 550 and 'https://check.spamhaus.org/query/ip/' in str(r[1]):
+                    raise ConnectionRefusedError(f"Ip blocked by Spamhaus")
+            
+                return False
+            except smtplib.SMTPResponseException as e:
+                pass
+
         return False
        
     def close(self):
