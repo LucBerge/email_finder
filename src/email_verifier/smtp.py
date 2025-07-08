@@ -35,12 +35,12 @@ class Smtp(AbstractEmailVerifier):
                     return True
                 
                 # GOOGLE RATE ERROR
-                if r[0] == 550 and 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
+                if 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
                     return True
 
                 # SPAMHAUS PROJECT
-                if r[0] == 550 and 'https://check.spamhaus.org/query/ip/' in str(r[1]):
-                    raise ConnectionRefusedError(f"Ip blocked by Spamhaus")
+                if 'https://check.spamhaus.org/query/ip/' in str(r[1]):
+                    raise ConnectionRefusedError(f"Ip blocked by spamhaus.org. See https://check.spamhaus.org")
             
                 return False
             except smtplib.SMTPResponseException as e:
