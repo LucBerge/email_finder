@@ -5,7 +5,7 @@ from .abstract_email_verifier import AbstractEmailVerifier
 
 class Smtp(AbstractEmailVerifier):
 
-    DELAY_BETWEEN_THREADS = 0  # seconds
+    DELAY_BETWEEN_THREADS = 0.01  # seconds
     MX_CACHE = {}
 
     def get_mx(hostname: str) -> list[str]:
