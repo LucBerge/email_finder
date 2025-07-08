@@ -13,10 +13,7 @@ class EmailFinder:
         verifier = EmailVerifierFactory.create(self.verifier_type)
         try:
             if verifier.verify_email(f"this_is_a_random_email@{domain}"):
-                return {}
-        except ConnectionRefusedError as e:
-            print(e)
-            return {}
+                raise ValueError(f"Domain {domain} is not compatible with {self.verifier_type}: The answer is always True.")
         finally:
             verifier.close()
 

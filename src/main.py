@@ -40,15 +40,17 @@ def main():
             # If the file is empty
             if not content:
                 # Find valid email
-                emails = EmailFinder(EMAIL_VERIFIER).find_email(name, domain)
-                
+                emails = []
+
                 print(f"----------------\nReport for {name} (@{domain}):")
-                f.write('---------- VALID EMAILS ----------\n')
-                # If emails is empty, domain is not compatible with verifier
-                if len(emails) == 0:
-                    print(f"Domain {domain} is not compatible with {EMAIL_VERIFIER}. Find an other way...")
-                    f.write(f"*@{domain} is not compatible with {EMAIL_VERIFIER}. Find an other way...\n")
+                try:
+                    emails = EmailFinder(EMAIL_VERIFIER).find_email(name, domain)
+                except Exception as e:
+                    print(f"Error while finding emails for {name} (@{domain}):\n{e}")
+                    f.write(f"Error while finding emails for {name} (@{domain}):\n{e}\n")
                     continue
+
+                f.write('---------- VALID EMAILS ----------\n')
 
                 # Get valid emails
                 valid_emails = [email for email, is_valid in emails.items() if is_valid]
