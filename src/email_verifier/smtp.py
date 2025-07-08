@@ -26,10 +26,12 @@ class Smtp(AbstractEmailVerifier):
             mx_servers = Smtp.get_mx(domain)
             for mx_server in mx_servers:
                 try:
+                    print(f"Connecting to SMTP server: {mx_server}")
                     smtp_server = smtplib.SMTP(mx_server, 25, timeout=10)
                     smtp_server.ehlo_or_helo_if_needed()
                     smtp_server.mail('')
                     self.smtp_server = smtp_server
+                    print(f"Successfully connected to SMTP server: {mx_server}")
                     return
                 except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected):
                     continue
