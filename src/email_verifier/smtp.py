@@ -62,4 +62,6 @@ class Smtp(AbstractEmailVerifier):
         return False
 
     def close(self):
-       self.smtp_server.quit()
+        if self.smtp_server:
+            self.smtp_server.quit()
+        self.smtp_server = None
