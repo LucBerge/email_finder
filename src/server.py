@@ -4,11 +4,19 @@ from email_finder import EmailFinder
 from threading import Thread
 import requests
 import os
+import traceback
 
 app = Flask(__name__)
 
 HOST = os.getenv('HOST', 'localhost')
 PORT = os.getenv('PORT', None)
+
+def handle_error(e):
+    print(f"Error: {e}")
+    return jsonify({
+        'error': str(e),
+        'traceback': traceback.format_exc()
+    }), 500
 
 @app.route('/find', methods=['POST'])
 def find():
@@ -39,7 +47,7 @@ def find():
             Thread(target=process_find, args=(name, domain, callback)).start()
             return '', 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return handle_error(e)
 
 @app.route('/check', methods=['POST'])
 def check():
@@ -60,7 +68,7 @@ def check():
         print(f"Email {email} is {'valid' if is_valid else 'invalid'}")
         return jsonify({'valid': is_valid})
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return handle_error(e)
 
 if __name__ == '__main__':
     app.run(debug=False, host=HOST, port=PORT)
