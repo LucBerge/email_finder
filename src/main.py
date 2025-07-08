@@ -42,7 +42,6 @@ def main():
                 # Find valid email
                 emails = []
 
-                print(f"----------------\nReport for {name} (@{domain}):")
                 try:
                     emails = EmailFinder(EMAIL_VERIFIER).find_email(name, domain)
                 except Exception as e:
@@ -50,6 +49,7 @@ def main():
                     f.write(f"Error while finding emails for {name} (@{domain}):\n{e}\n")
                     continue
 
+                print(f"----------------\nReport for {name} (@{domain}):")
                 f.write('---------- VALID EMAILS ----------\n')
 
                 # Get valid emails
