@@ -2,3 +2,4 @@ DrissionPage
 flask
 requests
 py3DNS
+unidecode

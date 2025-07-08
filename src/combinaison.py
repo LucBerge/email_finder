@@ -1,5 +1,6 @@
 import itertools 
 import re
+from unidecode import unidecode
 
 NAME = "My Name"
 DOMAIN = "example.com"
@@ -9,8 +10,10 @@ TWO_DELIMITERS = list(itertools.product(*[NON_EMPTY_DELIMITERS, NON_EMPTY_DELIMI
 DELIMITERS_TO_SKIP = [''.join(d) for d in TWO_DELIMITERS ]
 
 def generate_name_combinations(name):
+    # Normalize the name to ASCII and lowercase
+    name = unidecode(name).strip().lower()
     # Split the name into parts
-    parts = re.sub(r'\s+', ' ', name.strip().lower()) \
+    parts = re.sub(r'\s+', ' ', name) \
             .replace('.', ' ') \
             .replace('_', ' ') \
             .replace('-', ' ') \
