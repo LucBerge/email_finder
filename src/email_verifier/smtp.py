@@ -19,38 +19,47 @@ class Smtp(AbstractEmailVerifier):
 
     def __init__(self):
        super().__init__(Smtp.DELAY_BETWEEN_THREADS)
+       self.smtp_server = None
+
+    def open(self, domain: str) -> smtplib.SMTP:
+        if self.smtp_server is None:
+            mx_servers = Smtp.get_mx(domain)
+            for mx_server in mx_servers:
+                try:
+                    smtp_server = smtplib.SMTP(mx_server, 25, timeout=10)
+                    smtp_server.ehlo_or_helo_if_needed()
+                    smtp_server.mail('')
+                    self.smtp_server = smtp_server
+                    return
+                except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected):
+                    continue
+            raise ConnectionError("Could not connect to any SMTP server.")
 
     def verify_email(self, email: str) -> bool:
+        # Open SMTP connection if not already open
         domain = email.split('@')[-1]
-        mx_servers = Smtp.get_mx(domain)
-        
-        for mx_server in mx_servers:
-            try:
-                smtpServer = smtplib.SMTP(mx_server, 25, timeout=10)
-                smtpServer.ehlo_or_helo_if_needed()
-                smtpServer.mail('')
-                r = smtpServer.rcpt(email)
-                smtpServer.quit()
-                if r[0] == 250:
-                    return True
+        self.open(domain)
+
+        # Check if the email is valid by sending a MAIL TO command
+        r = self.smtp_server.rcpt(email)
+
+        # If the response code is 250, the email is valid
+        if r[0] == 250:
+            return True
                 
-                # GOOGLE RATE ERROR
-                if 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
-                    return True
+        # GOOGLE RATE ERROR
+        if 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
+            return True
 
-                # SPAMHAUS FIREWALL
-                if 'https://check.spamhaus.org/query/ip/' in str(r[1]):
-                    raise ConnectionRefusedError(f"Ip blocked by spamhaus.org. See https://check.spamhaus.org")
+        # SPAMHAUS FIREWALL
+        if 'https://check.spamhaus.org/query/ip/' in str(r[1]):
+            raise ConnectionRefusedError(f"Ip blocked by spamhaus.org. See https://check.spamhaus.org")
 
-                # IF BLACKLISTED BY MAIL SERVER
-                if 'Your access to this mail system has been rejected' in str(r[1]):
-                    raise ConnectionRefusedError(f"You have been blacklisted by the mail server")
-
-                return False
-            except smtplib.SMTPResponseException as e:
-                pass
+        # IF BLACKLISTED BY MAIL SERVER
+        if 'Your access to this mail system has been rejected' in str(r[1]):
+            raise ConnectionRefusedError(f"You have been blacklisted by the mail server")
 
         return False
-       
+
     def close(self):
-       pass
+       self.smtp_server.quit()
