@@ -32,12 +32,12 @@ class EmailFinder:
                     thread = EmailVerifierThread(email, self.verifier_type)
                     thread.start()
                     threads.append(thread)
-                    time.sleep(8)
-            
+                    time.sleep(verifier.delay_between_threads)
+
             for thread in threads:
                 thread.join()
                 if thread.is_valid is not None:
-                    emails[thread.email] = thread.is_valid            
+                    emails[thread.email] = thread.is_valid
         
         return emails
 

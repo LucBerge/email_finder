@@ -2,7 +2,11 @@ from DrissionPage import ChromiumPage, ChromiumOptions
 from .abstract_email_verifier import AbstractEmailVerifier
 
 class Mailmeteor(AbstractEmailVerifier):
+
+    DELAY_BETWEEN_THREADS = 8  # seconds
+
     def __init__(self):
+        super().__init__(Mailmeteor.DELAY_BETWEEN_THREADS)
         self.driver = None
 
     def close(self):
