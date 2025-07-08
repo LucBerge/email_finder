@@ -38,10 +38,14 @@ class Smtp(AbstractEmailVerifier):
                 if 'https://support.google.com/mail/?p=ReceivingRatePerm' in str(r[1]):
                     return True
 
-                # SPAMHAUS PROJECT
+                # SPAMHAUS FIREWALL
                 if 'https://check.spamhaus.org/query/ip/' in str(r[1]):
                     raise ConnectionRefusedError(f"Ip blocked by spamhaus.org. See https://check.spamhaus.org")
-            
+
+                # IF BLACKLISTED BY MAIL SERVER
+                if 'Your access to this mail system has been rejected' in str(r[1]):
+                    raise ConnectionRefusedError(f"You have been blacklisted by the mail server")
+
                 return False
             except smtplib.SMTPResponseException as e:
                 pass
