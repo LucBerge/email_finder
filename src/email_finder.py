@@ -14,6 +14,8 @@ class EmailFinder:
         try:
             if verifier.verify_email(f"this_is_a_random_email@{domain}"):
                 return {}
+        except ConnectionRefusedError as e:
+            return {}
         finally:
             verifier.close()
 
