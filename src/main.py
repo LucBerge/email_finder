@@ -53,7 +53,7 @@ def main():
                 f.write('---------- VALID EMAILS ----------\n')
 
                 # Get valid emails
-                valid_emails = [email for email, is_valid in emails.items() if is_valid]
+                valid_emails = emails["valid"]
                 if len(valid_emails) == 0:
                     print(f"No valid emails found for {name} (@{domain}). Is it a gost?")
                     f.write(f"None\n")
@@ -67,7 +67,7 @@ def main():
                 f.write('\n---------- INVALID EMAILS ----------\n')
 
                 # Get invalid emails
-                invalid_emails = [email for email, is_valid in emails.items() if not is_valid]
+                invalid_emails = emails["invalid"]
                 for email in invalid_emails:
                     f.write(f"{email}\n")
 

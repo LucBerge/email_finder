@@ -7,7 +7,7 @@ class EmailFinder:
     def __init__(self, verifier_type: str):
         self.verifier_type = verifier_type
 
-    def find_email(self, name: str, domain: str) -> dict[str, bool]:
+    def find_email(self, name: str, domain: str) -> dict:
 
         # Check if verifier is compatible with the domain
         verifier = EmailVerifierFactory.create(self.verifier_type)
@@ -38,8 +38,12 @@ class EmailFinder:
                 thread.join()
                 if thread.is_valid is not None:
                     emails[thread.email] = thread.is_valid
-        
-        return emails
+
+        return {
+            "total": len(emails),
+            "valid": [email for email, is_valid in emails.items() if is_valid],
+            "invalid": [email for email, is_valid in emails.items() if not is_valid],
+        }
 
         
 class EmailVerifierThread(threading.Thread):
