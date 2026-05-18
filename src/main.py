@@ -1,7 +1,7 @@
 import os
 from email_finder import EmailFinder
 
-EMAIL_VERIFIER = "smtp"
+EMAIL_VERIFIER = "smtp"     # Could be "smtp" or "mailmeteor".
 
 def list_files():
     files = []
