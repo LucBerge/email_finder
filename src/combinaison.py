@@ -20,22 +20,32 @@ def generate_name_combinations(name):
             .replace(',', ' ') \
             .split()
 
-    # Generate variations for each part of the name
-    part_variations = []
-    for part in parts:
-        part_variations.append([
-            part[0],     # First letter of the part
-            part[:2],    # Two first letters of the part
-            part,        # Full part
-            '',          # None
-        ])
+    combinations = []
+    seen = set()
 
-        # Add variations with delimiters if not the last part
-        if part != parts[-1]:
-                part_variations.append(DELIMITERS)
+    # Consider every ordering of every non-empty subset of the name parts.
+    # e.g. "A B C" -> A, B, C, A B, A C, B A, ..., A B C, ..., C B A
+    for size in range(1, len(parts) + 1):
+        for ordered_parts in itertools.permutations(parts, size):
+            # Generate variations for each part of the ordering
+            part_variations = []
+            for index, part in enumerate(ordered_parts):
+                part_variations.append([
+                    part[0],     # First letter of the part
+                    part[:2],    # Two first letters of the part
+                    part,        # Full part
+                    '',          # None
+                ])
 
-    # Comine all the parts variations in one list
-    combinations = list(itertools.product(*part_variations))
+                # Add variations with delimiters if not the last part
+                if index != len(ordered_parts) - 1:
+                    part_variations.append(DELIMITERS)
+
+            # Combine all the part variations for this ordering
+            for combination in itertools.product(*part_variations):
+                if combination not in seen:
+                    seen.add(combination)
+                    combinations.append(combination)
 
     return combinations
 
@@ -66,6 +76,7 @@ def main():
     email_combinations = generate_email_combinations(NAME, DOMAIN)
     for email in email_combinations:
         print(email)
+    print(f"Generated {len(email_combinations)} email combinations for name '{NAME}' and domain '{DOMAIN}':")
 
 if __name__ == "__main__":
     main()
