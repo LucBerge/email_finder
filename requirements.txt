@@ -1,5 +1,6 @@
 DrissionPage
 flask
 requests
-py3DNS
+#py3DNS
 unidecode
+dnspython

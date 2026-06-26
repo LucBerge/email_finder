@@ -1,6 +1,6 @@
 import smtplib
 from smtplib import *
-import DNS
+import dns.resolver
 from .abstract_email_verifier import AbstractEmailVerifier
 
 class Smtp(AbstractEmailVerifier):
@@ -11,9 +11,10 @@ class Smtp(AbstractEmailVerifier):
     def get_mx(hostname: str) -> list[str]:
         if hostname not in Smtp.MX_CACHE:
             print("Performing MX lookup for:", hostname)
-            mx_servers = DNS.mxlookup(hostname)
-            mx_servers.sort(key=lambda x: x[0])
-            mx_servers = [x[1] for x in mx_servers]
+            records = dns.resolver.resolve(hostname, 'MX')
+            print("MX records found:", records[0].exchange)
+            mx_servers = sorted(records, key=lambda x: x.preference)
+            mx_servers = [str(x.exchange).rstrip('.') for x in mx_servers]
             Smtp.MX_CACHE[hostname] = mx_servers
         return Smtp.MX_CACHE[hostname]
 
